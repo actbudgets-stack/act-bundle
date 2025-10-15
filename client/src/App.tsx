@@ -7,6 +7,8 @@ import Home from "@/pages/Home";
 import Recipient from "@/pages/Recipient";
 import Payment from "@/pages/Payment";
 import Success from "@/pages/Success";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +22,12 @@ function Router() {
       </Route>
       <Route path="/success">
         <Success />
+      </Route>
+      <Route path="/about">
+        <About />
+      </Route>
+      <Route path="/contact">
+        <Contact />
       </Route>
       <Route path="/">
         <Home />
