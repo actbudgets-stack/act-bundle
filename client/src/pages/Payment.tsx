@@ -48,12 +48,16 @@ const MOCK_PACKAGES: Record<string, Package> = {
   "pkg-26": { id: "pkg-26", serviceId: "airteltigo", name: "10GB Bundle", dataAmount: "10GB", price: 45, validity: "Non Expiry" },
   "pkg-27": { id: "pkg-27", serviceId: "airteltigo", name: "15GB Bundle", dataAmount: "15GB", price: 62, validity: "Non Expiry" },
   "pkg-28": { id: "pkg-28", serviceId: "airteltigo", name: "20GB Bundle", dataAmount: "20GB", price: 80, validity: "Non Expiry" },
+  "pkg-29": { id: "pkg-29", serviceId: "wasce", name: "1 Checker", dataAmount: "1 Checker", price: 30, validity: "Non Expiry" },
+  "pkg-30": { id: "pkg-30", serviceId: "bece", name: "1 Checker", dataAmount: "1 Checker", price: 30, validity: "Non Expiry" },
 };
 
 const SERVICE_NAMES: Record<string, string> = {
   mtn: "MTN",
   airteltigo: "AirtelTigo",
   telecel: "Telecel",
+  wasce: "WASCE Checker",
+  bece: "BECE Checker",
 };
 
 // Load Paystack inline script
@@ -156,7 +160,6 @@ export default function Payment() {
         key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
         email: `customer${response.orderId}@triversa.com`,
         amount: Math.round((selectedPackage?.price || 0) * 100), // Convert to pesewas
-        currency: 'GHS',
         ref: response.reference,
         onClose: () => {
           setIsProcessing(false);

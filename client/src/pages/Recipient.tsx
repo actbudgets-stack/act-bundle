@@ -52,12 +52,20 @@ const MOCK_PACKAGES: Record<string, Package[]> = {
     { id: "pkg-27", serviceId: "airteltigo", name: "15GB Bundle", dataAmount: "15GB", price: 62, validity: "Non Expiry" },
     { id: "pkg-28", serviceId: "airteltigo", name: "20GB Bundle", dataAmount: "20GB", price: 80, validity: "Non Expiry" },
   ],
+  wasce: [
+    { id: "pkg-29", serviceId: "wasce", name: "1 Checker", dataAmount: "1 Checker", price: 30, validity: "Non Expiry" },
+  ],
+  bece: [
+    { id: "pkg-30", serviceId: "bece", name: "1 Checker", dataAmount: "1 Checker", price: 30, validity: "Non Expiry" },
+  ],
 };
 
 const SERVICE_NAMES: Record<string, string> = {
   mtn: "MTN",
   airteltigo: "AirtelTigo",
   telecel: "Telecel",
+  wasce: "WASCE Checker",
+  bece: "BECE Checker",
 };
 
 export default function Recipient() {

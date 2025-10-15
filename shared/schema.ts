@@ -21,7 +21,7 @@ export interface Service {
   id: string;
   name: string;
   logo: string;
-  category: 'telecom' | 'utility';
+  category: 'telecom' | 'utility' | 'checker';
 }
 
 export interface Package {

@@ -23,6 +23,18 @@ const MOCK_SERVICES: Service[] = [
     name: "Telecel",
     logo: "https://placehold.co/200x100/D32F2F/FFFFFF?text=Telecel",
     category: "telecom"
+  },
+  {
+    id: "wasce",
+    name: "WASCE Checker",
+    logo: "https://placehold.co/200x100/2196F3/FFFFFF?text=WASCE",
+    category: "checker"
+  },
+  {
+    id: "bece",
+    name: "BECE Checker",
+    logo: "https://placehold.co/200x100/4CAF50/FFFFFF?text=BECE",
+    category: "checker"
   }
 ];
 
