@@ -160,6 +160,7 @@ export default function Payment() {
         key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
         email: `customer${response.orderId}@triversa.com`,
         amount: Math.round((selectedPackage?.price || 0) * 100), // Convert to pesewas
+        currency: 'GHS',
         ref: response.reference,
         onClose: () => {
           setIsProcessing(false);
