@@ -5,9 +5,11 @@ interface WhatsAppBannerProps {
   phoneNumber?: string;
 }
 
-export default function WhatsAppBanner({ phoneNumber = "+233 276 885 358" }: WhatsAppBannerProps) {
-  const whatsappLink = `https://wa.me/${phoneNumber.replace(/\D/g, '')}`;
-  
+export default function WhatsAppBanner({
+  phoneNumber = "+233 206 557 715",
+}: WhatsAppBannerProps) {
+  const whatsappLink = `https://wa.me/${phoneNumber.replace(/\D/g, "")}`;
+
   return (
     <Card className="bg-chart-3/10 border-chart-3/20">
       <a
@@ -19,7 +21,8 @@ export default function WhatsAppBanner({ phoneNumber = "+233 276 885 358" }: Wha
       >
         <SiWhatsapp className="h-5 w-5 text-chart-3" />
         <span className="text-sm font-medium">
-          Also available on WhatsApp: <span className="text-chart-3">{phoneNumber}</span>
+          Also available on WhatsApp:{" "}
+          <span className="text-chart-3">{phoneNumber}</span>
         </span>
       </a>
     </Card>

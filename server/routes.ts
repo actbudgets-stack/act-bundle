@@ -4,7 +4,10 @@ import { storage } from "./storage";
 import { orderSchema } from "@shared/schema";
 import { z } from "zod";
 
-const PACKAGES: Record<string, { id: string; price: number; dataAmount: string }> = {
+const PACKAGES: Record<
+  string,
+  { id: string; price: number; dataAmount: string }
+> = {
   "pkg-1": { id: "pkg-1", price: 6, dataAmount: "1GB" },
   "pkg-2": { id: "pkg-2", price: 11, dataAmount: "2GB" },
   "pkg-3": { id: "pkg-3", price: 16, dataAmount: "3GB" },
@@ -33,6 +36,8 @@ const PACKAGES: Record<string, { id: string; price: number; dataAmount: string }
   "pkg-26": { id: "pkg-26", price: 45, dataAmount: "10GB" },
   "pkg-27": { id: "pkg-27", price: 62, dataAmount: "15GB" },
   "pkg-28": { id: "pkg-28", price: 80, dataAmount: "20GB" },
+  "pkg-29": { id: "pkg-29", price: 30, dataAmount: "1 Chekcer" },
+  "pkg-30": { id: "pkg-30", price: 30, dataAmount: "1 Chekcer" },
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -40,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payment/initialize", async (req, res) => {
     try {
       const data = orderSchema.parse(req.body);
-      
+
       // Get package details
       const packageDetails = PACKAGES[data.packageId];
       if (!packageDetails) {
@@ -50,50 +55,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create order in storage
       const order = await storage.createOrder({
         ...data,
-        amount: packageDetails.price
+        amount: packageDetails.price,
       });
 
       // Initialize Paystack payment
-      const domain = process.env.REPLIT_DEV_DOMAIN || 'localhost:5000';
+      const domain = process.env.REPLIT_DEV_DOMAIN || "localhost:5000";
       const callbackUrl = `https://${domain}/success`;
-      
-      const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-          'Content-Type': 'application/json',
+
+      const paystackResponse = await fetch(
+        "https://api.paystack.co/transaction/initialize",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: `customer${order.id}@triversa.com`, // Using order ID as customer email
+            amount: Math.round(packageDetails.price * 100), // Convert to pesewas/cents
+            reference: order.id,
+            callback_url: callbackUrl,
+            metadata: {
+              orderId: order.id,
+              serviceId: data.serviceId,
+              packageId: data.packageId,
+              recipientNumber: data.recipientNumber,
+              dataAmount: packageDetails.dataAmount,
+            },
+          }),
         },
-        body: JSON.stringify({
-          email: `customer${order.id}@triversa.com`, // Using order ID as customer email
-          amount: Math.round(packageDetails.price * 100), // Convert to pesewas/cents
-          reference: order.id,
-          callback_url: callbackUrl,
-          metadata: {
-            orderId: order.id,
-            serviceId: data.serviceId,
-            packageId: data.packageId,
-            recipientNumber: data.recipientNumber,
-            dataAmount: packageDetails.dataAmount
-          }
-        })
-      });
+      );
 
       const paystackData = await paystackResponse.json();
 
       if (!paystackData.status) {
-        return res.status(400).json({ error: paystackData.message || "Payment initialization failed" });
+        return res.status(400).json({
+          error: paystackData.message || "Payment initialization failed",
+        });
       }
 
       res.json({
         orderId: order.id,
         authorizationUrl: paystackData.data.authorization_url,
         accessCode: paystackData.data.access_code,
-        reference: paystackData.data.reference
+        reference: paystackData.data.reference,
       });
     } catch (error) {
-      console.error('Payment initialization error:', error);
+      console.error("Payment initialization error:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+        return res
+          .status(400)
+          .json({ error: "Invalid request data", details: error.errors });
       }
       res.status(500).json({ error: "Internal server error" });
     }
@@ -103,13 +115,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/payment/verify/:reference", async (req, res) => {
     try {
       const { reference } = req.params;
-      console.log("ive been called")
-      const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        }
-      });
+      console.log("ive been called");
+      const paystackResponse = await fetch(
+        `https://api.paystack.co/transaction/verify/${reference}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          },
+        },
+      );
 
       const paystackData = await paystackResponse.json();
 
@@ -118,12 +133,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { data } = paystackData;
-      console.log('Paystack verification data:', JSON.stringify(data));
-      
+      console.log("Paystack verification data:", JSON.stringify(data));
+
       // Update order status
-      if (data.status === 'success') {
-        await storage.updateOrderStatus(data.reference, 'completed');
-        
+      if (data.status === "success") {
+        await storage.updateOrderStatus(data.reference, "completed");
+
         // Send purchase details to webhook
         const webhookPayload = {
           reference: data.reference,
@@ -136,35 +151,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dataAmount: data.metadata?.dataAmount,
           transactionDate: data.transaction_date,
           channel: data.channel,
-          customerEmail: data.customer?.email
+          customerEmail: data.customer?.email,
         };
-        
-        console.log('Sending to webhook:', webhookPayload);
-        
+
+        console.log("Sending to webhook:", webhookPayload);
+
         try {
-          const webhookRes = await fetch('https://06a2b233f397.ngrok-free.app/receive_success', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+          const webhookRes = await fetch(
+            "https://06a2b233f397.ngrok-free.app/receive_success",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(webhookPayload),
             },
-            body: JSON.stringify(webhookPayload)
-          });
-          console.log('Webhook response:', webhookRes.status, await webhookRes.text());
+          );
+          console.log(
+            "Webhook response:",
+            webhookRes.status,
+            await webhookRes.text(),
+          );
         } catch (webhookError) {
-          console.error('Webhook notification error:', webhookError);
+          console.error("Webhook notification error:", webhookError);
         }
       } else {
-        await storage.updateOrderStatus(data.reference, 'failed');
+        await storage.updateOrderStatus(data.reference, "failed");
       }
 
       res.json({
         status: data.status,
         amount: data.amount / 100, // Convert back from pesewas/cents
         reference: data.reference,
-        metadata: data.metadata
+        metadata: data.metadata,
       });
     } catch (error) {
-      console.error('Payment verification error:', error);
+      console.error("Payment verification error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
